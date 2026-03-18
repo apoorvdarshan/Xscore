@@ -64,7 +64,7 @@ export interface UserInfo {
 async function runBird(args: string[]): Promise<string> {
   try {
     const { stdout } = await execFileAsync(BIRD_BIN, args, {
-      timeout: 30000,
+      timeout: 120000,
       env: { ...process.env, NO_COLOR: "1" },
     });
     return stdout;
@@ -156,7 +156,8 @@ export async function fetchUserAndTweets(username: string): Promise<{
   const output = await runBird([
     "user-tweets",
     cleanUsername,
-    "-n", "20",
+    "-n", "200",
+    "--max-pages", "10",
     "--json-full",
   ]);
 

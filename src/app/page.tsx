@@ -180,17 +180,7 @@ export default function Home() {
           )}
 
           {/* Loading */}
-          {loading && (
-            <div className="mt-20 max-w-lg mx-auto space-y-3 fade-up">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-3 h-3 rounded-full" style={{ background: "var(--cyan)", animation: "pulse-dot 1s ease-in-out infinite" }} />
-                <span className="mono" style={{ fontSize: "0.7rem", color: "var(--text-tertiary)" }}>Analyzing engagement signals...</span>
-              </div>
-              {[100, 60, 80, 40].map((w, i) => (
-                <div key={i} className="shimmer-bar rounded-lg" style={{ height: i === 0 ? "80px" : "40px", width: `${w}%`, animationDelay: `${i * 150}ms` }} />
-              ))}
-            </div>
-          )}
+          {loading && <LoadingAnimation />}
         </header>
 
         {/* ─── RESULTS ─── */}
@@ -469,5 +459,105 @@ export default function Home() {
         </footer>
       </div>
     </main>
+  );
+}
+
+const LOAD_STEPS = [
+  { text: "Looking up user profile...", duration: 2000 },
+  { text: "Fetching tweets (up to 200)...", duration: 4000 },
+  { text: "Paging through timeline...", duration: 8000 },
+  { text: "Extracting engagement metrics...", duration: 3000 },
+  { text: "Computing P(action) signals...", duration: 2000 },
+  { text: "Calculating weighted scores...", duration: 2000 },
+  { text: "Ranking by P(favorite)...", duration: 1500 },
+  { text: "Generating analysis...", duration: 60000 },
+];
+
+function LoadingAnimation() {
+  const [step, setStep] = useState(0);
+  const [elapsed, setElapsed] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => setElapsed((e) => e + 1), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    let total = 0;
+    for (let i = 0; i < LOAD_STEPS.length; i++) {
+      total += LOAD_STEPS[i].duration;
+      if (elapsed * 1000 < total) {
+        setStep(i);
+        return;
+      }
+    }
+    setStep(LOAD_STEPS.length - 1);
+  }, [elapsed]);
+
+  const progress = Math.min((step / (LOAD_STEPS.length - 1)) * 100, 95);
+
+  return (
+    <div className="mt-16 max-w-md mx-auto fade-up">
+      {/* Spinner + Status */}
+      <div className="flex flex-col items-center gap-5 mb-8">
+        {/* Animated rings */}
+        <div className="relative w-16 h-16">
+          <svg width={64} height={64} className="animate-spin" style={{ animationDuration: "3s" }}>
+            <circle cx={32} cy={32} r={28} fill="none" stroke="var(--border-dim)" strokeWidth={2} />
+            <circle
+              cx={32} cy={32} r={28} fill="none"
+              stroke="var(--cyan)" strokeWidth={2} strokeLinecap="round"
+              strokeDasharray={176} strokeDashoffset={132}
+              style={{ filter: "drop-shadow(0 0 6px var(--cyan))" }}
+            />
+          </svg>
+          <svg width={64} height={64} className="absolute inset-0 animate-spin" style={{ animationDuration: "2s", animationDirection: "reverse" }}>
+            <circle
+              cx={32} cy={32} r={20} fill="none"
+              stroke="var(--cyan)" strokeWidth={1} strokeLinecap="round"
+              strokeDasharray={126} strokeDashoffset={100}
+              opacity={0.3}
+            />
+          </svg>
+          <div className="absolute inset-0 flex items-center justify-center mono" style={{ fontSize: "0.65rem", color: "var(--text-tertiary)" }}>
+            {elapsed}s
+          </div>
+        </div>
+
+        {/* Step text */}
+        <div className="text-center">
+          <p className="mono" style={{ fontSize: "0.75rem", color: "var(--text-secondary)" }}>
+            {LOAD_STEPS[step].text}
+          </p>
+          <p className="mono mt-1" style={{ fontSize: "0.55rem", color: "var(--text-ghost)" }}>
+            Step {step + 1} of {LOAD_STEPS.length}
+          </p>
+        </div>
+      </div>
+
+      {/* Progress bar */}
+      <div className="h-[3px] rounded-full overflow-hidden" style={{ background: "var(--border-dim)" }}>
+        <div
+          className="h-full rounded-full"
+          style={{
+            width: `${progress}%`,
+            background: "linear-gradient(90deg, var(--cyan), var(--cyan-bright))",
+            boxShadow: "0 0 8px var(--cyan)",
+            transition: "width 1s ease-out",
+          }}
+        />
+      </div>
+
+      {/* Shimmer blocks */}
+      <div className="mt-8 space-y-2.5">
+        {[100, 70, 85, 55, 65].map((w, i) => (
+          <div
+            key={i}
+            className="shimmer-bar rounded-lg"
+            style={{ height: i === 0 ? "72px" : "36px", width: `${w}%`, animationDelay: `${i * 200}ms` }}
+          />
+        ))}
+      </div>
+    </div>
   );
 }
