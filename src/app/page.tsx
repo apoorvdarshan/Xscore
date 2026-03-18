@@ -142,7 +142,7 @@ export default function Home() {
                 <button
                   type="submit"
                   disabled={loading || !username.trim()}
-                  className="mono mr-2 px-5 py-2.5 rounded-xl transition-all duration-200 disabled:opacity-20"
+                  className="mono mr-2 px-5 py-2.5 rounded-xl transition-all duration-200 disabled:opacity-20 cursor-pointer disabled:cursor-not-allowed"
                   style={{
                     fontSize: "0.7rem",
                     fontWeight: 500,
