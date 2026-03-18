@@ -38,7 +38,7 @@ async function main() {
 
   const rawArg = process.argv[2];
   if (!rawArg) {
-    console.log("  Usage: \x1b[1mnpx @apoorvdarshan/xscore @username\x1b[0m");
+    console.log("  Usage: \x1b[1mnpx -y @apoorvdarshan/xscore @username\x1b[0m");
     console.log();
     printInfo("Analyzes any X account against the open-source algorithm.");
     printInfo("Requires: logged into x.com in a browser (uses cookies).");

@@ -6,13 +6,28 @@
  */
 
 import { spawn } from "child_process";
+import { existsSync } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { Tweet, MediaInfo } from "./algorithm";
 
-// Resolve bird binary relative to this package (works with npx too)
+// Resolve bird binary — check multiple locations for npx compatibility
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const BIRD_BIN = path.join(__dirname, "..", "..", "node_modules", ".bin", "bird");
+function findBird(): string {
+  const candidates = [
+    // Local dev: package root node_modules
+    path.join(__dirname, "..", "..", "node_modules", ".bin", "bird"),
+    // npx: hoisted to top-level node_modules
+    path.join(__dirname, "..", "..", "..", "..", ".bin", "bird"),
+    // npx scoped: @apoorvdarshan/xscore inside node_modules
+    path.join(__dirname, "..", "..", "..", "..", "..", ".bin", "bird"),
+  ];
+  for (const p of candidates) {
+    if (existsSync(p)) return p;
+  }
+  return "bird"; // fallback to PATH
+}
+const BIRD_BIN = findBird();
 
 interface BirdTweet {
   id: string;

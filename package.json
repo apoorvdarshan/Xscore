@@ -1,6 +1,6 @@
 {
   "name": "@apoorvdarshan/xscore",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Analyze any X (Twitter) account against the open-source recommendation algorithm. CLI tool — run npx @apoorvdarshan/xscore @username",
   "main": "src/lib/algorithm.ts",
   "bin": {

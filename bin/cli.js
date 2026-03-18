@@ -8,7 +8,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const cli = path.join(__dirname, "cli.ts");
 
 try {
-  execFileSync("npx", ["tsx", cli, ...process.argv.slice(2)], {
+  execFileSync("npx", ["-y", "tsx", cli, ...process.argv.slice(2)], {
     stdio: "inherit",
     env: { ...process.env },
   });
