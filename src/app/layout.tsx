@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     template: "%s | xscore",
   },
   description:
-    "Analyze any X (Twitter) account against the open-source recommendation algorithm. See your engagement score out of 100, 19 signal breakdown, best/worst tweets, and what's hurting your reach. Free, no login required.",
+    "Analyze any X (Twitter) account against the open-source recommendation algorithm. Run npx @apoorvdarshan/xscore @username to get your engagement score out of 100, 19 signal breakdown, best/worst tweets, and what's hurting your reach. Free CLI tool.",
   keywords: [
     "X algorithm",
     "Twitter algorithm",
@@ -83,9 +83,7 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: "/favicon.svg", type: "image/svg+xml" },
-      { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
     ],
-    apple: "/apple-touch-icon.png",
   },
 };
 

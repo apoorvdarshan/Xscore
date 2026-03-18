@@ -1,8 +1,8 @@
 {
   "name": "@apoorvdarshan/xscore",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Analyze any X (Twitter) account against the open-source recommendation algorithm. CLI tool — run npx @apoorvdarshan/xscore @username",
+  "main": "src/lib/algorithm.ts",
   "bin": {
     "xscore": "bin/cli.js"
   },
@@ -20,8 +20,16 @@
     "type": "git",
     "url": "git+https://github.com/apoorvdarshan/Xscore.git"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "x",
+    "twitter",
+    "algorithm",
+    "score",
+    "engagement",
+    "analytics",
+    "cli"
+  ],
+  "author": "Apoorv Darshan",
   "license": "ISC",
   "type": "module",
   "bugs": {
@@ -34,8 +42,6 @@
     "@types/node": "^25.5.0",
     "@types/react": "^19.2.14",
     "@vercel/analytics": "^2.0.1",
-    "html2canvas-pro": "^2.0.2",
-    "motion": "^12.38.0",
     "next": "^16.1.7",
     "pako": "^2.1.0",
     "postcss": "^8.5.8",
