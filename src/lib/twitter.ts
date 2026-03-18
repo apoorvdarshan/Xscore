@@ -99,8 +99,25 @@ function parseBirdJson(output: string): BirdTweet[] {
   // Find the JSON array in the output
   const jsonStart = output.indexOf("[");
   if (jsonStart === -1) throw new Error("No tweet data returned");
-  const jsonStr = output.slice(jsonStart);
-  return JSON.parse(jsonStr);
+  let jsonStr = output.slice(jsonStart);
+
+  // Try parsing as-is first
+  try {
+    return JSON.parse(jsonStr);
+  } catch {
+    // JSON might be truncated — try to salvage by finding the last complete object
+    // Look for the last "}," or "}\n]" pattern
+    const lastComplete = jsonStr.lastIndexOf("},");
+    if (lastComplete > 0) {
+      jsonStr = jsonStr.slice(0, lastComplete + 1) + "]";
+      try {
+        return JSON.parse(jsonStr);
+      } catch {
+        // fall through
+      }
+    }
+    throw new Error("Failed to parse tweet data — try again");
+  }
 }
 
 /** Convert bird tweet format to our Tweet format */
@@ -169,8 +186,8 @@ export async function fetchUserAndTweets(username: string): Promise<{
   const output = await runBird([
     "user-tweets",
     cleanUsername,
-    "-n", "200",
-    "--max-pages", "10",
+    "-n", "100",
+    "--max-pages", "5",
     "--json-full",
   ]);
 
