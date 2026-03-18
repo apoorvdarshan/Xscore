@@ -198,7 +198,7 @@ export default function Home() {
                   Node.js 18+ · Logged into{" "}
                   <a href="https://x.com" target="_blank" rel="noopener noreferrer" style={{ color: "var(--cyan)", textDecoration: "underline", textUnderlineOffset: "2px" }}>x.com</a>
                   {" "}in Chrome/Edge/Brave · Uses{" "}
-                  <a href="https://www.jsdelivr.com/package/npm/@steipete/bird" target="_blank" rel="noopener noreferrer" style={{ color: "var(--cyan)", textDecoration: "underline", textUnderlineOffset: "2px" }}>@steipete/bird</a>
+                  <a href="https://www.npmjs.com/package/@steipete/bird" target="_blank" rel="noopener noreferrer" style={{ color: "var(--cyan)", textDecoration: "underline", textUnderlineOffset: "2px" }}>@steipete/bird</a>
                   {" "}for cookie-based data access
                 </p>
               </div>
@@ -449,7 +449,7 @@ export default function Home() {
             powered by{" "}
             <a href="https://github.com/xai-org/x-algorithm" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-[var(--cyan)]" style={{ textDecoration: "underline", textUnderlineOffset: "2px" }}>xai-org/x-algorithm</a>
             {" "}· data via{" "}
-            <a href="https://www.jsdelivr.com/package/npm/@steipete/bird" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-[var(--cyan)]" style={{ textDecoration: "underline", textUnderlineOffset: "2px" }}>@steipete/bird</a>
+            <a href="https://www.npmjs.com/package/@steipete/bird" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-[var(--cyan)]" style={{ textDecoration: "underline", textUnderlineOffset: "2px" }}>@steipete/bird</a>
           </div>
 
           <div className="mono mb-4" style={{ fontSize: "0.5rem", color: "var(--text-ghost)", maxWidth: "36rem", margin: "0 auto 1rem" }}>
