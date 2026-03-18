@@ -63,18 +63,31 @@ export interface UserInfo {
 
 async function runBird(args: string[]): Promise<string> {
   try {
-    const { stdout } = await execFileAsync(BIRD_BIN, args, {
+    const { stdout, stderr } = await execFileAsync(BIRD_BIN, args, {
       timeout: 120000,
       env: { ...process.env, NO_COLOR: "1" },
     });
+    // Bird outputs warnings to stderr (e.g. Safari not found) even on success.
+    // Only treat it as an error if stdout has no data.
+    if (!stdout.trim() && stderr) {
+      throw new Error(stderr);
+    }
     return stdout;
   } catch (err: unknown) {
-    const error = err as Error & { stderr?: string };
+    const error = err as Error & { stderr?: string; stdout?: string };
+    // If stdout has JSON data, the command succeeded despite stderr warnings
+    if (error.stdout && error.stdout.includes("[")) {
+      return error.stdout;
+    }
     const msg = error.stderr || error.message || "bird command failed";
-    if (msg.includes("No Twitter cookies")) {
-      throw new Error("Not logged into X in Chrome. Please log into x.com in Chrome first.");
+    // Only flag cookie error if ALL browsers failed (no stdout)
+    if (msg.includes("No Twitter cookies") && !msg.includes("Chrome")) {
+      throw new Error("Not logged into X. Please log into x.com in a browser first.");
     }
     if (msg.includes("User not found") || msg.includes("UserUnavailable")) {
+      throw new Error("User not found");
+    }
+    if (msg.includes("Could not find user")) {
       throw new Error("User not found");
     }
     throw new Error(`bird error: ${msg}`);
