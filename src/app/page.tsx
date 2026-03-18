@@ -83,7 +83,7 @@ export default function Home() {
   ];
 
   const handleCopy = () => {
-    navigator.clipboard.writeText("npx xscore @username");
+    navigator.clipboard.writeText("npx @apoorvdarshan/xscore @username");
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };

@@ -1,10 +1,10 @@
 {
-  "name": "xscore",
+  "name": "@apoorvdarshan/xscore",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "bin": {
-    "xscore": "./bin/cli.ts"
+    "xscore": "bin/cli.js"
   },
   "files": [
     "bin/",

@@ -5,7 +5,7 @@ Analyze any X (Twitter) account against the [open-source X recommendation algori
 ## Quick Start
 
 ```bash
-npx xscore @username
+npx @apoorvdarshan/xscore @username
 ```
 
 That's it. Fetches tweets locally, scores 19 engagement signals, and opens a shareable results page in your browser.
@@ -16,7 +16,7 @@ That's it. Fetches tweets locally, scores 19 engagement signals, and opens a sha
 
 ## How It Works
 
-1. **Run the CLI** — `npx xscore @username`
+1. **Run the CLI** — `npx @apoorvdarshan/xscore @username`
 2. **Local scoring** — Fetches last 50 tweets using your browser cookies, scores each against the Phoenix weighted scorer formula
 3. **View results** — Opens [xscores.vercel.app](https://xscores.vercel.app) with your results encoded in the URL (shareable)
 
