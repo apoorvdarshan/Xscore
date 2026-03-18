@@ -464,7 +464,7 @@ export default function Home() {
 
 const LOAD_STEPS = [
   { text: "Looking up user profile...", duration: 2000 },
-  { text: "Fetching tweets (up to 100)...", duration: 4000 },
+  { text: "Fetching tweets (up to 50)...", duration: 4000 },
   { text: "Paging through timeline...", duration: 8000 },
   { text: "Extracting engagement metrics...", duration: 3000 },
   { text: "Computing P(action) signals...", duration: 2000 },

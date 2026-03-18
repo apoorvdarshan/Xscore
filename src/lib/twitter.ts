@@ -206,8 +206,8 @@ export async function fetchUserAndTweets(username: string): Promise<{
   const output = await runBird([
     "user-tweets",
     cleanUsername,
-    "-n", "100",
-    "--max-pages", "5",
+    "-n", "50",
+    "--max-pages", "3",
     "--json-full",
   ]);
 
