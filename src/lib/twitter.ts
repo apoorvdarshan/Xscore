@@ -19,6 +19,7 @@ interface BirdTweet {
   replyCount: number;
   retweetCount: number;
   likeCount: number;
+  conversationId?: string;
   author: { username: string; name: string };
   authorId: string;
   media?: Array<{ type: string; url: string }>;
