@@ -142,7 +142,7 @@ export default function Home() {
                 <div className="p-5 flex items-center justify-between gap-4">
                   <div className="mono flex items-center gap-2" style={{ fontSize: "0.95rem" }}>
                     <span style={{ color: "var(--green)" }}>$</span>
-                    <span style={{ color: "var(--text-primary)" }}>npx xscore</span>
+                    <span style={{ color: "var(--text-primary)" }}>npx @apoorvdarshan/xscore</span>
                     <span style={{ color: "var(--cyan)" }}>@username</span>
                   </div>
                   <button
