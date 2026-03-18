@@ -4,7 +4,6 @@ import { useState, useRef, useEffect } from "react";
 import { ScoreGauge } from "@/components/ScoreGauge";
 import { SignalBar } from "@/components/SignalBar";
 import { TweetCard } from "@/components/TweetCard";
-import { ShareCard } from "@/components/ShareCard";
 import {
   ACTIONS,
   ACTION_LABELS,
@@ -260,7 +259,29 @@ export default function Home() {
 
             {/* Share */}
             <div className="fade-up stagger-2">
-              <ShareCard user={result.user} analysis={result.analysis} />
+              <button
+                onClick={() => {
+                  const topSignal = ACTIONS.filter(a => SIGNAL_POLARITY[a] === "positive")
+                    .sort((a, b) => result.analysis.signalAverages[b] - result.analysis.signalAverages[a])[0];
+                  const text = `My @${result.user.username} algorithm score is ${result.analysis.overallScore}/100\n\nTop signal: ${ACTION_LABELS[topSignal]} (${(result.analysis.signalAverages[topSignal] * 100).toFixed(2)}%)\n${result.analysis.tweets.length} tweets analyzed\n\nCheck yours:`;
+                  window.open(
+                    `https://x.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent("https://x_score.vercel.app")}`,
+                    "_blank"
+                  );
+                }}
+                className="mono px-5 py-2.5 rounded-xl cursor-pointer transition-all duration-200 hover:opacity-80"
+                style={{
+                  fontSize: "0.7rem",
+                  fontWeight: 500,
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  background: "var(--bg-elevated)",
+                  border: "1px solid var(--border-dim)",
+                  color: "var(--text-secondary)",
+                }}
+              >
+                Share on 𝕏
+              </button>
             </div>
 
             {/* Tabs */}
