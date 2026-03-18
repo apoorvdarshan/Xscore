@@ -463,6 +463,10 @@ export default function Home() {
             <a href="https://www.npmjs.com/package/@steipete/bird" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-[var(--cyan)]" style={{ textDecoration: "underline", textUnderlineOffset: "2px" }}>@steipete/bird</a>
           </div>
 
+          <div className="mono mb-4" style={{ fontSize: "0.5rem", color: "var(--text-ghost)", maxWidth: "36rem", margin: "0 auto 1rem" }}>
+            Disclaimer: This is an independent tool not affiliated with X. Uses @steipete/bird for data access and xai-org/x-algorithm for scoring logic. Use at your own discretion.
+          </div>
+
           <div className="mono pt-4 flex items-center justify-center gap-3 flex-wrap" style={{ borderTop: "1px solid var(--border-dim)", fontSize: "0.55rem" }}>
             <span style={{ color: "var(--text-tertiary)" }}>Built by Apoorv Darshan</span>
             {[
