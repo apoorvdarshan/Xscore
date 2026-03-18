@@ -7,10 +7,12 @@
 
 import { spawn } from "child_process";
 import path from "path";
+import { fileURLToPath } from "url";
 import { Tweet, MediaInfo } from "./algorithm";
 
-// Resolve bird binary from node_modules
-const BIRD_BIN = path.join(process.cwd(), "node_modules", ".bin", "bird");
+// Resolve bird binary relative to this package (works with npx too)
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const BIRD_BIN = path.join(__dirname, "..", "..", "node_modules", ".bin", "bird");
 
 interface BirdTweet {
   id: string;

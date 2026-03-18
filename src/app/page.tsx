@@ -10,6 +10,7 @@ import {
   SIGNAL_POLARITY,
   type AccountAnalysis,
 } from "@/lib/algorithm";
+import { decode } from "@/lib/codec";
 
 interface UserInfo {
   name: string;
@@ -33,40 +34,43 @@ function fmt(n: number) {
 }
 
 export default function Home() {
-  const [username, setUsername] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const [result, setResult] = useState<AnalysisResponse | null>(null);
+  const [decodeError, setDecodeError] = useState("");
   const [activeTab, setActiveTab] = useState<"signals" | "tweets" | "insights">("signals");
-  const [inputFocused, setInputFocused] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [copied, setCopied] = useState(false);
   const resultsRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => { inputRef.current?.focus(); }, []);
+  // Check for #data= hash on mount and hash changes
+  useEffect(() => {
+    function loadFromHash() {
+      const hash = window.location.hash;
+      if (hash.startsWith("#data=")) {
+        try {
+          const encoded = hash.slice(6);
+          const decoded = decode(encoded);
+          setResult(decoded);
+          setDecodeError("");
+          setActiveTab("signals");
+        } catch {
+          setDecodeError("Invalid or corrupted results link. Run the CLI again.");
+          setResult(null);
+        }
+      } else {
+        setResult(null);
+        setDecodeError("");
+      }
+    }
+
+    loadFromHash();
+    window.addEventListener("hashchange", loadFromHash);
+    return () => window.removeEventListener("hashchange", loadFromHash);
+  }, []);
+
   useEffect(() => {
     if (result && resultsRef.current) {
       resultsRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   }, [result]);
-
-  async function handleAnalyze(e: React.FormEvent) {
-    e.preventDefault();
-    if (!username.trim()) return;
-    setLoading(true);
-    setError("");
-    setResult(null);
-    try {
-      const res = await fetch(`/api/analyze?username=${encodeURIComponent(username.trim())}`);
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Analysis failed");
-      setResult(data);
-      setActiveTab("signals");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
-    } finally {
-      setLoading(false);
-    }
-  }
 
   const scoreColor = result
     ? result.analysis.overallScore >= 70 ? "var(--green)" : result.analysis.overallScore >= 40 ? "var(--amber)" : "var(--red)"
@@ -77,6 +81,12 @@ export default function Home() {
     { key: "tweets" as const, label: "Tweets", sub: result ? `${result.analysis.tweets.length} ranked` : "" },
     { key: "insights" as const, label: "Insights", sub: "reach analysis" },
   ];
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText("npx xscore @username");
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
     <main className="min-h-screen relative">
@@ -90,7 +100,6 @@ export default function Home() {
               : "radial-gradient(ellipse 40% 35% at center, rgba(0,212,255,0.03), transparent)",
           }}
         />
-        {/* Side accent lines */}
         <div className="absolute top-0 left-[15%] w-px h-full" style={{ background: "linear-gradient(to bottom, transparent, var(--border-dim) 30%, var(--border-dim) 70%, transparent)" }} />
         <div className="absolute top-0 right-[15%] w-px h-full" style={{ background: "linear-gradient(to bottom, transparent, var(--border-dim) 30%, var(--border-dim) 70%, transparent)" }} />
       </div>
@@ -98,7 +107,6 @@ export default function Home() {
       <div className="relative max-w-[960px] mx-auto px-5 sm:px-8 pb-32">
         {/* ─── HERO ─── */}
         <header className="pt-20 sm:pt-28 pb-16 sm:pb-24">
-          {/* Logo */}
           <div className="fade-up text-center">
             <h1 className="display" style={{ fontSize: "clamp(3.5rem, 10vw, 7rem)", lineHeight: 0.9, letterSpacing: "-0.04em", fontWeight: 400 }}>
               <span style={{ color: "var(--text-primary)" }}>x</span>
@@ -110,126 +118,144 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Search */}
-          <form onSubmit={handleAnalyze} className="mt-14 max-w-lg mx-auto fade-up stagger-2">
-            <div
-              className="relative rounded-2xl transition-all duration-300"
-              style={{
-                background: "var(--bg-card)",
-                border: `1px solid ${inputFocused ? "var(--cyan)" : "var(--border-dim)"}`,
-                boxShadow: inputFocused
-                  ? "0 0 0 1px rgba(0,212,255,0.1), 0 12px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.02)"
-                  : "0 4px 20px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.02)",
-              }}
-            >
-              <div className="flex items-center">
-                <span className="mono pl-5 pr-1" style={{ fontSize: "0.9rem", color: inputFocused ? "var(--cyan)" : "var(--text-ghost)" }}>
-                  @
-                </span>
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="username"
-                  className="mono flex-1 py-4 pr-4 bg-transparent outline-none placeholder:text-[var(--text-ghost)]"
-                  style={{ fontSize: "0.95rem", color: "var(--text-primary)", caretColor: "var(--cyan)" }}
-                  disabled={loading}
-                  onFocus={() => setInputFocused(true)}
-                  onBlur={() => setInputFocused(false)}
-                />
-                <button
-                  type="submit"
-                  disabled={loading || !username.trim()}
-                  className="mono mr-2 px-5 py-2.5 rounded-xl transition-all duration-200 disabled:opacity-20 cursor-pointer disabled:cursor-not-allowed"
-                  style={{
-                    fontSize: "0.7rem",
-                    fontWeight: 500,
-                    letterSpacing: "0.1em",
-                    textTransform: "uppercase",
-                    background: loading ? "var(--bg-elevated)" : "var(--cyan)",
-                    color: loading ? "var(--text-tertiary)" : "var(--bg-void)",
-                  }}
-                >
-                  {loading ? (
-                    <span className="flex items-center gap-2">
-                      <span className="w-3 h-3 rounded-full border-[1.5px] border-current border-t-transparent animate-spin" />
-                      Scanning
-                    </span>
-                  ) : "Analyze"}
-                </button>
+          {/* ─── LANDING (no results) ─── */}
+          {!result && (
+            <div className="mt-14 max-w-lg mx-auto fade-up stagger-2">
+              {/* Terminal card */}
+              <div
+                className="rounded-2xl overflow-hidden"
+                style={{
+                  background: "var(--bg-card)",
+                  border: "1px solid var(--border-dim)",
+                  boxShadow: "0 4px 20px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.02)",
+                }}
+              >
+                {/* Terminal header */}
+                <div className="px-4 py-2.5 flex items-center gap-2" style={{ borderBottom: "1px solid var(--border-dim)" }}>
+                  <span className="w-2.5 h-2.5 rounded-full" style={{ background: "#ff5f57" }} />
+                  <span className="w-2.5 h-2.5 rounded-full" style={{ background: "#febc2e" }} />
+                  <span className="w-2.5 h-2.5 rounded-full" style={{ background: "#28c840" }} />
+                  <span className="mono ml-2" style={{ fontSize: "0.55rem", color: "var(--text-ghost)" }}>terminal</span>
+                </div>
+
+                {/* Command */}
+                <div className="p-5 flex items-center justify-between gap-4">
+                  <div className="mono flex items-center gap-2" style={{ fontSize: "0.95rem" }}>
+                    <span style={{ color: "var(--green)" }}>$</span>
+                    <span style={{ color: "var(--text-primary)" }}>npx xscore</span>
+                    <span style={{ color: "var(--cyan)" }}>@username</span>
+                  </div>
+                  <button
+                    onClick={handleCopy}
+                    className="mono px-3 py-1.5 rounded-lg cursor-pointer transition-all duration-200 hover:opacity-80 shrink-0"
+                    style={{
+                      fontSize: "0.6rem",
+                      background: copied ? "rgba(52,211,153,0.1)" : "var(--bg-elevated)",
+                      border: `1px solid ${copied ? "rgba(52,211,153,0.3)" : "var(--border-dim)"}`,
+                      color: copied ? "var(--green)" : "var(--text-ghost)",
+                    }}
+                  >
+                    {copied ? "Copied!" : "Copy"}
+                  </button>
+                </div>
               </div>
-            </div>
 
-            {/* Hint */}
-            <p className="mono text-center mt-3" style={{ fontSize: "0.58rem", color: "var(--text-ghost)" }}>
-              based on{" "}
-              <a href="https://github.com/xai-org/x-algorithm" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-[var(--cyan)]" style={{ textDecoration: "underline", textUnderlineOffset: "2px" }}>
-                xai-org/x-algorithm
-              </a>
-              {" "}· 19 engagement signals · phoenix weighted scorer
-            </p>
-          </form>
+              {/* Steps */}
+              <div className="mt-8 grid grid-cols-3 gap-4">
+                {[
+                  { step: "1", title: "Run the CLI", desc: "Fetches tweets using your browser cookies" },
+                  { step: "2", title: "Local scoring", desc: "Algorithm scores 19 engagement signals" },
+                  { step: "3", title: "View results", desc: "Opens shareable results page here" },
+                ].map(({ step, title, desc }) => (
+                  <div key={step} className="text-center">
+                    <div
+                      className="mono inline-flex items-center justify-center w-7 h-7 rounded-full mb-2"
+                      style={{ fontSize: "0.65rem", fontWeight: 600, background: "var(--cyan-dim)", color: "var(--cyan)", border: "1px solid rgba(0,212,255,0.15)" }}
+                    >
+                      {step}
+                    </div>
+                    <p className="mono" style={{ fontSize: "0.65rem", fontWeight: 500, color: "var(--text-secondary)" }}>{title}</p>
+                    <p className="mono mt-1" style={{ fontSize: "0.5rem", color: "var(--text-ghost)", lineHeight: 1.5 }}>{desc}</p>
+                  </div>
+                ))}
+              </div>
 
-          {/* Error */}
-          {error && (
-            <div className="fade-up mt-6 max-w-lg mx-auto mono text-center py-3 px-4 rounded-xl" style={{ fontSize: "0.75rem", color: "var(--red)", background: "var(--red-dim)", border: "1px solid rgba(251,79,94,0.15)" }}>
-              {error}
+              {/* Privacy note */}
+              <div className="mt-8 text-center">
+                <p className="mono" style={{ fontSize: "0.52rem", color: "var(--text-ghost)", letterSpacing: "0.04em" }}>
+                  <span style={{ color: "var(--green)" }}>●</span>{" "}
+                  Your data never touches our servers. Everything runs on your machine.
+                </p>
+              </div>
+
+              {/* Prerequisites */}
+              <div
+                className="mt-6 rounded-xl p-4"
+                style={{ background: "var(--cyan-glow)", border: "1px solid rgba(0,212,255,0.06)" }}
+              >
+                <p className="mono" style={{ fontSize: "0.58rem", color: "var(--text-tertiary)", lineHeight: 1.7 }}>
+                  <span style={{ color: "var(--cyan)", fontWeight: 500 }}>Prerequisites:</span>{" "}
+                  Node.js 18+ · Logged into{" "}
+                  <a href="https://x.com" target="_blank" rel="noopener noreferrer" style={{ color: "var(--cyan)", textDecoration: "underline", textUnderlineOffset: "2px" }}>x.com</a>
+                  {" "}in Chrome/Edge/Brave · Uses{" "}
+                  <a href="https://www.npmjs.com/package/@steipete/bird" target="_blank" rel="noopener noreferrer" style={{ color: "var(--cyan)", textDecoration: "underline", textUnderlineOffset: "2px" }}>@steipete/bird</a>
+                  {" "}for cookie-based data access
+                </p>
+              </div>
+
+              {/* Hint */}
+              <p className="mono text-center mt-5" style={{ fontSize: "0.58rem", color: "var(--text-ghost)" }}>
+                based on{" "}
+                <a href="https://github.com/xai-org/x-algorithm" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-[var(--cyan)]" style={{ textDecoration: "underline", textUnderlineOffset: "2px" }}>
+                  xai-org/x-algorithm
+                </a>
+                {" "}· 19 engagement signals · phoenix weighted scorer
+              </p>
+
+              {/* Decode error */}
+              {decodeError && (
+                <div className="fade-up mt-6 mono text-center py-3 px-4 rounded-xl" style={{ fontSize: "0.75rem", color: "var(--red)", background: "var(--red-dim)", border: "1px solid rgba(251,79,94,0.15)" }}>
+                  {decodeError}
+                </div>
+              )}
             </div>
           )}
-
-          {/* Loading */}
-          {loading && <LoadingAnimation />}
         </header>
 
         {/* ─── RESULTS ─── */}
         {result && (
           <div ref={resultsRef} className="space-y-6">
+            {/* Back button */}
+            <button
+              onClick={() => { window.location.hash = ""; setResult(null); }}
+              className="mono px-3 py-1.5 rounded-lg cursor-pointer transition-all duration-200 hover:opacity-80 fade-up"
+              style={{ fontSize: "0.6rem", background: "var(--bg-elevated)", border: "1px solid var(--border-dim)", color: "var(--text-ghost)" }}
+            >
+              ← Analyze another
+            </button>
+
             {/* Profile Hero */}
             <section className="fade-up glass-card rounded-2xl overflow-hidden">
-              {/* Accent line */}
               <div className="h-px" style={{ background: `linear-gradient(90deg, transparent 10%, ${scoreColor}, transparent 90%)` }} />
-
               <div className="p-6 sm:p-8">
                 <div className="flex flex-col lg:flex-row items-center gap-8">
-                  {/* Left: User */}
                   <div className="flex-1 flex items-center gap-5 min-w-0">
                     {result.user.profileImageUrl && (
                       <div className="relative shrink-0">
-                        <img
-                          src={result.user.profileImageUrl}
-                          alt=""
-                          className="w-[72px] h-[72px] rounded-2xl"
-                          style={{ border: "2px solid var(--border-base)" }}
-                        />
-                        <div
-                          className="absolute -bottom-1.5 -right-1.5 w-6 h-6 rounded-lg flex items-center justify-center mono"
-                          style={{ fontSize: "0.6rem", fontWeight: 600, background: "var(--bg-card)", border: "1px solid var(--border-base)" }}
-                        >
-                          𝕏
-                        </div>
+                        <img src={result.user.profileImageUrl} alt="" className="w-[72px] h-[72px] rounded-2xl" style={{ border: "2px solid var(--border-base)" }} />
+                        <div className="absolute -bottom-1.5 -right-1.5 w-6 h-6 rounded-lg flex items-center justify-center mono" style={{ fontSize: "0.6rem", fontWeight: 600, background: "var(--bg-card)", border: "1px solid var(--border-base)" }}>𝕏</div>
                       </div>
                     )}
                     <div className="min-w-0">
-                      <h2 className="display truncate" style={{ fontSize: "1.6rem", fontWeight: 600, lineHeight: 1.15 }}>
-                        {result.user.name}
-                      </h2>
-                      <span className="mono block mt-0.5" style={{ fontSize: "0.78rem", color: "var(--text-tertiary)" }}>
-                        @{result.user.username}
-                      </span>
+                      <h2 className="display truncate" style={{ fontSize: "1.6rem", fontWeight: 600, lineHeight: 1.15 }}>{result.user.name}</h2>
+                      <span className="mono block mt-0.5" style={{ fontSize: "0.78rem", color: "var(--text-tertiary)" }}>@{result.user.username}</span>
                       {result.user.description && (
-                        <p className="serif mt-2 line-clamp-2" style={{ fontSize: "0.8rem", color: "var(--text-ghost)", lineHeight: 1.5 }}>
-                          {result.user.description}
-                        </p>
+                        <p className="serif mt-2 line-clamp-2" style={{ fontSize: "0.8rem", color: "var(--text-ghost)", lineHeight: 1.5 }}>{result.user.description}</p>
                       )}
                     </div>
                   </div>
-
-                  {/* Right: Gauge */}
                   <ScoreGauge score={result.analysis.overallScore} size="lg" />
                 </div>
-
-                {/* Stats strip */}
                 <div className="mt-6 pt-5 flex flex-wrap gap-x-8 gap-y-3" style={{ borderTop: "1px solid var(--border-dim)" }}>
                   {[
                     { label: "Followers", value: fmt(result.user.followers) },
@@ -238,18 +264,12 @@ export default function Home() {
                     { label: "Top Signal", value: ACTION_LABELS[ACTIONS.filter(a => SIGNAL_POLARITY[a] === "positive").sort((a, b) => result.analysis.signalAverages[b] - result.analysis.signalAverages[a])[0]] },
                   ].map((stat) => (
                     <div key={stat.label}>
-                      <span className="mono block" style={{ fontSize: "0.5rem", color: "var(--text-ghost)", letterSpacing: "0.15em", textTransform: "uppercase" }}>
-                        {stat.label}
-                      </span>
-                      <span className="mono" style={{ fontSize: "0.82rem", color: "var(--text-secondary)", fontWeight: 500 }}>
-                        {stat.value}
-                      </span>
+                      <span className="mono block" style={{ fontSize: "0.5rem", color: "var(--text-ghost)", letterSpacing: "0.15em", textTransform: "uppercase" }}>{stat.label}</span>
+                      <span className="mono" style={{ fontSize: "0.82rem", color: "var(--text-secondary)", fontWeight: 500 }}>{stat.value}</span>
                     </div>
                   ))}
                 </div>
               </div>
-
-              {/* Citation bar */}
               <div className="px-6 sm:px-8 py-2.5 mono flex items-center gap-2" style={{ borderTop: "1px solid var(--border-dim)", fontSize: "0.52rem", color: "var(--text-ghost)", letterSpacing: "0.04em" }}>
                 <span className="w-1 h-1 rounded-full shrink-0" style={{ background: "var(--amber)" }} />
                 Score = Σ(w × P(action)) · phoenix/runners.py ·
@@ -264,21 +284,10 @@ export default function Home() {
                   const topSignal = ACTIONS.filter(a => SIGNAL_POLARITY[a] === "positive")
                     .sort((a, b) => result.analysis.signalAverages[b] - result.analysis.signalAverages[a])[0];
                   const text = `My @${result.user.username} algorithm score is ${result.analysis.overallScore}/100\n\nTop signal: ${ACTION_LABELS[topSignal]} (${(result.analysis.signalAverages[topSignal] * 100).toFixed(2)}%)\n\nBuilt by @apoorvdarshan\n\nCheck yours: xscores.vercel.app`;
-                  window.open(
-                    `https://x.com/intent/tweet?text=${encodeURIComponent(text)}`,
-                    "_blank"
-                  );
+                  window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(text)}`, "_blank");
                 }}
                 className="mono px-5 py-2.5 rounded-xl cursor-pointer transition-all duration-200 hover:opacity-80"
-                style={{
-                  fontSize: "0.7rem",
-                  fontWeight: 500,
-                  letterSpacing: "0.08em",
-                  textTransform: "uppercase",
-                  background: "var(--bg-elevated)",
-                  border: "1px solid var(--border-dim)",
-                  color: "var(--text-secondary)",
-                }}
+                style={{ fontSize: "0.7rem", fontWeight: 500, letterSpacing: "0.08em", textTransform: "uppercase", background: "var(--bg-elevated)", border: "1px solid var(--border-dim)", color: "var(--text-secondary)" }}
               >
                 Share on 𝕏
               </button>
@@ -291,16 +300,12 @@ export default function Home() {
                   key={tab.key}
                   onClick={() => setActiveTab(tab.key)}
                   className="flex-1 py-3.5 relative transition-colors duration-200"
-                  style={{
-                    background: activeTab === tab.key ? "var(--bg-elevated)" : "transparent",
-                  }}
+                  style={{ background: activeTab === tab.key ? "var(--bg-elevated)" : "transparent" }}
                 >
                   <span className="mono block" style={{ fontSize: "0.7rem", fontWeight: 500, letterSpacing: "0.08em", textTransform: "uppercase", color: activeTab === tab.key ? "var(--text-primary)" : "var(--text-ghost)" }}>
                     {tab.label}
                   </span>
-                  <span className="mono block mt-0.5" style={{ fontSize: "0.5rem", color: "var(--text-ghost)" }}>
-                    {tab.sub}
-                  </span>
+                  <span className="mono block mt-0.5" style={{ fontSize: "0.5rem", color: "var(--text-ghost)" }}>{tab.sub}</span>
                   {activeTab === tab.key && (
                     <div className="absolute bottom-0 left-[20%] right-[20%] h-[2px] rounded-full" style={{ background: "var(--cyan)" }} />
                   )}
@@ -331,14 +336,7 @@ export default function Home() {
                   {ACTIONS.map((action, i) => {
                     const maxProb = Math.max(...ACTIONS.filter(a => SIGNAL_POLARITY[a] === SIGNAL_POLARITY[action]).map(a => result.analysis.signalAverages[a]));
                     return (
-                      <SignalBar
-                        key={action}
-                        action={action}
-                        label={ACTION_LABELS[action]}
-                        probability={result.analysis.signalAverages[action]}
-                        index={i}
-                        maxProb={maxProb}
-                      />
+                      <SignalBar key={action} action={action} label={ACTION_LABELS[action]} probability={result.analysis.signalAverages[action]} index={i} maxProb={maxProb} />
                     );
                   })}
                 </div>
@@ -362,7 +360,6 @@ export default function Home() {
             {/* ─── INSIGHTS TAB ─── */}
             {activeTab === "insights" && (
               <section className="space-y-5">
-                {/* Best / Worst */}
                 <div className="grid gap-4 md:grid-cols-2">
                   {[
                     { tweet: result.analysis.bestTweet, label: "Top Performing", rank: 1, color: "var(--green)", hex: "#34d399" },
@@ -380,7 +377,6 @@ export default function Home() {
                   ))}
                 </div>
 
-                {/* Boosting / Hurting */}
                 <div className="grid gap-4 md:grid-cols-2">
                   {[
                     { items: result.analysis.helpingReach, label: "Boosting Reach", color: "var(--green)", sign: "+" },
@@ -403,7 +399,6 @@ export default function Home() {
                   ))}
                 </div>
 
-                {/* Pipeline */}
                 <div className="fade-up stagger-5 glass-card rounded-2xl overflow-hidden">
                   <div className="px-5 py-2.5 mono" style={{ borderBottom: "1px solid var(--border-dim)", fontSize: "0.6rem", letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--cyan)" }}>
                     Algorithm Pipeline
@@ -419,13 +414,7 @@ export default function Home() {
                         { n: "OON", d: "OON adjust", f: "home-mixer/" },
                       ].map((s, i) => (
                         <div key={s.n} className="flex items-center gap-2">
-                          <div
-                            className="px-3 py-2 rounded-lg"
-                            style={{
-                              background: s.active ? "var(--cyan-dim)" : "var(--bg-elevated)",
-                              border: `1px solid ${s.active ? "rgba(0,212,255,0.2)" : "var(--border-dim)"}`,
-                            }}
-                          >
+                          <div className="px-3 py-2 rounded-lg" style={{ background: s.active ? "var(--cyan-dim)" : "var(--bg-elevated)", border: `1px solid ${s.active ? "rgba(0,212,255,0.2)" : "var(--border-dim)"}` }}>
                             <span className="mono block" style={{ fontSize: "0.65rem", fontWeight: 500, color: s.active ? "var(--cyan)" : "var(--text-primary)" }}>{s.n}</span>
                             <span className="mono block" style={{ fontSize: "0.48rem", color: "var(--text-ghost)" }}>{s.d}</span>
                           </div>
@@ -445,7 +434,7 @@ export default function Home() {
 
         {/* ─── FOOTER ─── */}
         <footer className={`text-center ${result ? "mt-20" : ""} fade-up stagger-4`}>
-          {!result && !loading && (
+          {!result && (
             <div className="mono flex items-center justify-center gap-4 mb-6" style={{ fontSize: "0.55rem", color: "var(--text-ghost)", letterSpacing: "0.08em", textTransform: "uppercase" }}>
               {["19 signals", "phoenix scorer", "grok transformer"].map((item, i) => (
                 <span key={item}>
@@ -484,105 +473,5 @@ export default function Home() {
         </footer>
       </div>
     </main>
-  );
-}
-
-const LOAD_STEPS = [
-  { text: "Looking up user profile...", duration: 2000 },
-  { text: "Fetching tweets (up to 50)...", duration: 4000 },
-  { text: "Paging through timeline...", duration: 8000 },
-  { text: "Extracting engagement metrics...", duration: 3000 },
-  { text: "Computing P(action) signals...", duration: 2000 },
-  { text: "Calculating weighted scores...", duration: 2000 },
-  { text: "Ranking by P(favorite)...", duration: 1500 },
-  { text: "Generating analysis...", duration: 60000 },
-];
-
-function LoadingAnimation() {
-  const [step, setStep] = useState(0);
-  const [elapsed, setElapsed] = useState(0);
-
-  useEffect(() => {
-    const timer = setInterval(() => setElapsed((e) => e + 1), 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  useEffect(() => {
-    let total = 0;
-    for (let i = 0; i < LOAD_STEPS.length; i++) {
-      total += LOAD_STEPS[i].duration;
-      if (elapsed * 1000 < total) {
-        setStep(i);
-        return;
-      }
-    }
-    setStep(LOAD_STEPS.length - 1);
-  }, [elapsed]);
-
-  const progress = Math.min((step / (LOAD_STEPS.length - 1)) * 100, 95);
-
-  return (
-    <div className="mt-16 max-w-md mx-auto fade-up">
-      {/* Spinner + Status */}
-      <div className="flex flex-col items-center gap-5 mb-8">
-        {/* Animated rings */}
-        <div className="relative w-16 h-16">
-          <svg width={64} height={64} className="animate-spin" style={{ animationDuration: "3s" }}>
-            <circle cx={32} cy={32} r={28} fill="none" stroke="var(--border-dim)" strokeWidth={2} />
-            <circle
-              cx={32} cy={32} r={28} fill="none"
-              stroke="var(--cyan)" strokeWidth={2} strokeLinecap="round"
-              strokeDasharray={176} strokeDashoffset={132}
-              style={{ filter: "drop-shadow(0 0 6px var(--cyan))" }}
-            />
-          </svg>
-          <svg width={64} height={64} className="absolute inset-0 animate-spin" style={{ animationDuration: "2s", animationDirection: "reverse" }}>
-            <circle
-              cx={32} cy={32} r={20} fill="none"
-              stroke="var(--cyan)" strokeWidth={1} strokeLinecap="round"
-              strokeDasharray={126} strokeDashoffset={100}
-              opacity={0.3}
-            />
-          </svg>
-          <div className="absolute inset-0 flex items-center justify-center mono" style={{ fontSize: "0.65rem", color: "var(--text-tertiary)" }}>
-            {elapsed}s
-          </div>
-        </div>
-
-        {/* Step text */}
-        <div className="text-center">
-          <p className="mono" style={{ fontSize: "0.75rem", color: "var(--text-secondary)" }}>
-            {LOAD_STEPS[step].text}
-          </p>
-          <p className="mono mt-1" style={{ fontSize: "0.55rem", color: "var(--text-ghost)" }}>
-            Step {step + 1} of {LOAD_STEPS.length}
-          </p>
-        </div>
-      </div>
-
-      {/* Progress bar */}
-      <div className="h-[3px] rounded-full overflow-hidden" style={{ background: "var(--border-dim)" }}>
-        <div
-          className="h-full rounded-full"
-          style={{
-            width: `${progress}%`,
-            background: "linear-gradient(90deg, var(--cyan), var(--cyan-bright))",
-            boxShadow: "0 0 8px var(--cyan)",
-            transition: "width 1s ease-out",
-          }}
-        />
-      </div>
-
-      {/* Shimmer blocks */}
-      <div className="mt-8 space-y-2.5">
-        {[100, 70, 85, 55, 65].map((w, i) => (
-          <div
-            key={i}
-            className="shimmer-bar rounded-lg"
-            style={{ height: i === 0 ? "72px" : "36px", width: `${w}%`, animationDelay: `${i * 200}ms` }}
-          />
-        ))}
-      </div>
-    </div>
   );
 }

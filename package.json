@@ -3,6 +3,13 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "bin": {
+    "xscore": "./bin/cli.ts"
+  },
+  "files": [
+    "bin/",
+    "src/lib/"
+  ],
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -30,10 +37,15 @@
     "html2canvas-pro": "^2.0.2",
     "motion": "^12.38.0",
     "next": "^16.1.7",
+    "pako": "^2.1.0",
     "postcss": "^8.5.8",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "tailwindcss": "^4.2.1",
+    "tsx": "^4.21.0",
     "typescript": "^5.9.3"
+  },
+  "devDependencies": {
+    "@types/pako": "^2.0.4"
   }
 }
