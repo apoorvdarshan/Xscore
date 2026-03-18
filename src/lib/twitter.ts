@@ -218,11 +218,21 @@ export async function fetchUserAndTweets(username: string): Promise<{
   }
 
   const user = extractUser(birdTweets, cleanUsername);
-  const tweets = birdTweets.map(toBirdTweet);
+
+  // Filter out replies and retweets — only score original posts
+  const originalTweets = birdTweets.filter((bt) => {
+    // Skip retweets (text starts with "RT @")
+    if (bt.text.startsWith("RT @")) return false;
+    // Skip replies (conversationId differs from tweet id = it's a reply)
+    if (bt.conversationId && bt.conversationId !== bt.id) return false;
+    return true;
+  });
+
+  const tweets = originalTweets.map(toBirdTweet);
 
   // Merge all media maps
   const mediaMap: Record<string, MediaInfo[]> = {};
-  for (const bt of birdTweets) {
+  for (const bt of originalTweets) {
     Object.assign(mediaMap, extractMedia(bt));
   }
 
