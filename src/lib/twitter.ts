@@ -5,12 +5,9 @@
  * No API key or bearer token needed.
  */
 
-import { execFile } from "child_process";
-import { promisify } from "util";
+import { spawn } from "child_process";
 import path from "path";
 import { Tweet, MediaInfo } from "./algorithm";
-
-const execFileAsync = promisify(execFile);
 
 // Resolve bird binary from node_modules
 const BIRD_BIN = path.join(process.cwd(), "node_modules", ".bin", "bird");
@@ -62,37 +59,45 @@ export interface UserInfo {
 }
 
 async function runBird(args: string[]): Promise<string> {
-  try {
-    const { stdout, stderr } = await execFileAsync(BIRD_BIN, args, {
-      timeout: 120000,
-      maxBuffer: 50 * 1024 * 1024, // 50MB — --json-full is ~14KB/tweet
+  return new Promise((resolve, reject) => {
+    const child = spawn(BIRD_BIN, args, {
       env: { ...process.env, NO_COLOR: "1" },
+      timeout: 120000,
     });
-    // Bird outputs warnings to stderr (e.g. Safari not found) even on success.
-    // Only treat it as an error if stdout has no data.
-    if (!stdout.trim() && stderr) {
-      throw new Error(stderr);
-    }
-    return stdout;
-  } catch (err: unknown) {
-    const error = err as Error & { stderr?: string; stdout?: string };
-    // If stdout has JSON data, the command succeeded despite stderr warnings
-    if (error.stdout && error.stdout.includes("[")) {
-      return error.stdout;
-    }
-    const msg = error.stderr || error.message || "bird command failed";
-    // Only flag cookie error if ALL browsers failed (no stdout)
-    if (msg.includes("No Twitter cookies") && !msg.includes("Chrome")) {
-      throw new Error("Not logged into X. Please log into x.com in a browser first.");
-    }
-    if (msg.includes("User not found") || msg.includes("UserUnavailable")) {
-      throw new Error("User not found");
-    }
-    if (msg.includes("Could not find user")) {
-      throw new Error("User not found");
-    }
-    throw new Error(`bird error: ${msg}`);
-  }
+
+    const chunks: Buffer[] = [];
+    const errChunks: Buffer[] = [];
+
+    child.stdout.on("data", (chunk: Buffer) => chunks.push(chunk));
+    child.stderr.on("data", (chunk: Buffer) => errChunks.push(chunk));
+
+    child.on("close", () => {
+      const stdout = Buffer.concat(chunks).toString();
+      const stderr = Buffer.concat(errChunks).toString();
+
+      // If we got JSON data in stdout, it's a success regardless of exit code
+      if (stdout.includes("[")) {
+        resolve(stdout);
+        return;
+      }
+
+      // No data — check stderr for useful errors
+      const msg = stderr || "bird returned no data";
+      if (msg.includes("429") || msg.includes("Rate limit")) {
+        reject(new Error("Rate limited by X — wait a few minutes and try again"));
+      } else if (msg.includes("User not found") || msg.includes("UserUnavailable") || msg.includes("Could not find user")) {
+        reject(new Error("User not found"));
+      } else if (msg.includes("No Twitter cookies")) {
+        reject(new Error("Not logged into X. Please log into x.com in a browser first."));
+      } else {
+        reject(new Error(`bird error: ${msg.slice(0, 300)}`));
+      }
+    });
+
+    child.on("error", (err) => {
+      reject(new Error(`Failed to run bird: ${err.message}`));
+    });
+  });
 }
 
 function parseBirdJson(output: string): BirdTweet[] {
@@ -102,17 +107,31 @@ function parseBirdJson(output: string): BirdTweet[] {
   if (jsonStart === -1) throw new Error("No tweet data returned");
   let jsonStr = output.slice(jsonStart);
 
-  // Try parsing as-is first
+  // Bird appends a {nextCursor:...} object after the array when paging.
+  // We need to find where the array ends and cut there.
+  // Find the matching closing bracket for the opening [
+  let depth = 0;
+  let arrayEnd = -1;
+  for (let i = 0; i < jsonStr.length; i++) {
+    if (jsonStr[i] === "[") depth++;
+    else if (jsonStr[i] === "]") {
+      depth--;
+      if (depth === 0) { arrayEnd = i; break; }
+    }
+  }
+
+  if (arrayEnd > 0) {
+    jsonStr = jsonStr.slice(0, arrayEnd + 1);
+  }
+
   try {
     return JSON.parse(jsonStr);
   } catch {
-    // JSON might be truncated — try to salvage by finding the last complete object
-    // Look for the last "}," or "}\n]" pattern
+    // Fallback: try to find last complete object
     const lastComplete = jsonStr.lastIndexOf("},");
     if (lastComplete > 0) {
-      jsonStr = jsonStr.slice(0, lastComplete + 1) + "]";
       try {
-        return JSON.parse(jsonStr);
+        return JSON.parse(jsonStr.slice(0, lastComplete + 1) + "]");
       } catch {
         // fall through
       }
