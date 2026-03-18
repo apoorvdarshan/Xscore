@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 const SITE_URL = "https://xscores.vercel.app";
@@ -120,7 +121,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
       </head>
-      <body className="antialiased">{children}</body>
+      <body className="antialiased">
+        {children}
+        <Analytics />
+      </body>
     </html>
   );
 }
