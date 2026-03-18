@@ -455,7 +455,8 @@ export default function Home() {
           <div className="mono pt-4 flex items-center justify-center gap-3 flex-wrap" style={{ borderTop: "1px solid var(--border-dim)", fontSize: "0.55rem" }}>
             <span style={{ color: "var(--text-tertiary)" }}>Built by Apoorv Darshan</span>
             {[
-              { label: "GitHub", href: "https://github.com/apoorvdarshan/Xscore" },
+              { label: "Source", href: "https://github.com/apoorvdarshan/Xscore" },
+              { label: "GitHub", href: "https://github.com/apoorvdarshan" },
               { label: "𝕏", href: "https://x.com/apoorvdarshan" },
               { label: "LinkedIn", href: "https://linkedin.com/in/apoorvdarshan" },
               { label: "Email", href: "mailto:ad13dtu@gmail.com" },
