@@ -21,8 +21,9 @@ export function SignalBar({
 
   return (
     <div
-      className="group flex items-center gap-3 py-[7px] px-3 -mx-3 rounded-md transition-colors duration-150 hover:bg-[var(--bg-hover)] relative"
+      className="group flex items-center gap-3 py-[5px] px-3 -mx-3 rounded-md transition-colors duration-150 hover:bg-[var(--bg-hover)]"
       style={{ animation: `fadeUp 0.5s cubic-bezier(0.22,1,0.36,1) ${index * 35}ms both` }}
+      title={weight.source}
     >
       {/* Index */}
       <span className="mono w-4 text-right shrink-0" style={{ fontSize: "0.6rem", color: "var(--text-invisible)" }}>
@@ -73,20 +74,6 @@ export function SignalBar({
         {weight.value > 0 ? "+" : ""}{weight.value}
       </span>
 
-      {/* Tooltip */}
-      <div
-        className="pointer-events-none absolute right-0 top-full mt-1 z-20 px-2.5 py-1.5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap"
-        style={{
-          background: "var(--bg-elevated)",
-          border: "1px solid var(--border-base)",
-          fontSize: "0.58rem",
-          color: "var(--text-tertiary)",
-          fontFamily: "var(--font-mono)",
-          boxShadow: "0 4px 16px rgba(0,0,0,0.5)",
-        }}
-      >
-        {weight.source}
-      </div>
     </div>
   );
 }
