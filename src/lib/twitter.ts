@@ -65,6 +65,7 @@ async function runBird(args: string[]): Promise<string> {
   try {
     const { stdout, stderr } = await execFileAsync(BIRD_BIN, args, {
       timeout: 120000,
+      maxBuffer: 50 * 1024 * 1024, // 50MB — --json-full is ~14KB/tweet
       env: { ...process.env, NO_COLOR: "1" },
     });
     // Bird outputs warnings to stderr (e.g. Safari not found) even on success.
