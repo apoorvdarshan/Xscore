@@ -2,149 +2,102 @@
 
 import { useEffect, useState } from "react";
 
-export function ScoreGauge({
-  score,
-  label,
-  size = "lg",
-}: {
-  score: number;
-  label: string;
-  size?: "sm" | "lg";
-}) {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+export function ScoreGauge({ score, size = "lg" }: { score: number; size?: "sm" | "lg" }) {
+  const [animated, setAnimated] = useState(false);
+  useEffect(() => { requestAnimationFrame(() => setAnimated(true)); }, []);
 
-  const isLarge = size === "lg";
-  const dim = isLarge ? 220 : 120;
-  const strokeWidth = isLarge ? 6 : 4;
-  const radius = (dim - strokeWidth * 2) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const progress = mounted ? (score / 100) * circumference : 0;
-  const offset = circumference - progress;
+  const large = size === "lg";
+  const dim = large ? 200 : 100;
+  const sw = large ? 5 : 3;
+  const r = (dim - sw * 4) / 2;
+  const circ = 2 * Math.PI * r;
+  const offset = animated ? circ - (score / 100) * circ : circ;
 
-  const color =
-    score >= 70
-      ? "var(--positive)"
-      : score >= 40
-        ? "var(--accent-amber)"
-        : "var(--negative)";
-
-  const glowColor =
-    score >= 70
-      ? "rgba(0,230,118,0.3)"
-      : score >= 40
-        ? "rgba(255,179,0,0.3)"
-        : "rgba(255,61,87,0.3)";
+  const color = score >= 70 ? "var(--green)" : score >= 40 ? "var(--amber)" : "var(--red)";
+  const glow = score >= 70 ? "rgba(52,211,153,0.25)" : score >= 40 ? "rgba(255,192,64,0.25)" : "rgba(251,79,94,0.25)";
+  const grade = score >= 85 ? "S" : score >= 70 ? "A" : score >= 55 ? "B" : score >= 40 ? "C" : score >= 25 ? "D" : "F";
 
   return (
-    <div className="flex flex-col items-center gap-3">
+    <div className="flex flex-col items-center gap-2 relative">
+      {large && (
+        <div
+          className="absolute rounded-full blur-[60px] transition-opacity duration-[2s]"
+          style={{ width: dim * 0.8, height: dim * 0.8, background: glow, opacity: animated ? 0.4 : 0 }}
+        />
+      )}
       <div className="relative" style={{ width: dim, height: dim }}>
-        {/* Glow backdrop */}
-        {isLarge && (
-          <div
-            className="absolute inset-0 rounded-full blur-3xl opacity-20 transition-opacity duration-1000"
-            style={{ background: glowColor }}
-          />
-        )}
-
-        <svg
-          width={dim}
-          height={dim}
-          className="-rotate-90"
-          style={{ filter: isLarge ? `drop-shadow(0 0 12px ${glowColor})` : undefined }}
-        >
-          {/* Track marks */}
-          {isLarge &&
-            Array.from({ length: 60 }).map((_, i) => {
-              const angle = (i / 60) * 360;
-              const rad = (angle * Math.PI) / 180;
-              const inner = radius - 12;
-              const outer = radius - (i % 5 === 0 ? 6 : 9);
-              return (
-                <line
-                  key={i}
-                  x1={dim / 2 + Math.cos(rad) * inner}
-                  y1={dim / 2 + Math.sin(rad) * inner}
-                  x2={dim / 2 + Math.cos(rad) * outer}
-                  y2={dim / 2 + Math.sin(rad) * outer}
-                  stroke={
-                    i / 60 <= score / 100
-                      ? color
-                      : "var(--border-dim)"
-                  }
-                  strokeWidth={i % 5 === 0 ? 1.5 : 0.5}
-                  opacity={i / 60 <= score / 100 ? 0.6 : 0.3}
-                />
-              );
-            })}
-
-          {/* Background ring */}
+        <svg width={dim} height={dim} className="-rotate-90">
+          {/* Outer tick ring */}
+          {large && Array.from({ length: 100 }).map((_, i) => {
+            const a = (i / 100) * 360 * (Math.PI / 180);
+            const active = i <= score;
+            const isMajor = i % 10 === 0;
+            const len = isMajor ? 8 : 4;
+            const o = r + sw * 2;
+            return (
+              <line
+                key={i}
+                x1={dim / 2 + Math.cos(a) * (o - len)}
+                y1={dim / 2 + Math.sin(a) * (o - len)}
+                x2={dim / 2 + Math.cos(a) * o}
+                y2={dim / 2 + Math.sin(a) * o}
+                stroke={active ? color : "var(--border-dim)"}
+                strokeWidth={isMajor ? 1.5 : 0.5}
+                opacity={active ? 0.7 : 0.2}
+                style={{ transition: `opacity 0.8s ${i * 8}ms, stroke 0.8s ${i * 8}ms` }}
+              />
+            );
+          })}
+          {/* Track */}
+          <circle cx={dim/2} cy={dim/2} r={r} fill="none" stroke="var(--border-dim)" strokeWidth={sw} opacity={0.3} />
+          {/* Progress */}
           <circle
-            cx={dim / 2}
-            cy={dim / 2}
-            r={radius}
-            fill="none"
-            stroke="var(--border-dim)"
-            strokeWidth={strokeWidth}
-          />
-
-          {/* Progress ring */}
-          <circle
-            cx={dim / 2}
-            cy={dim / 2}
-            r={radius}
-            fill="none"
-            stroke={color}
-            strokeWidth={strokeWidth}
-            strokeLinecap="round"
-            strokeDasharray={circumference}
-            strokeDashoffset={offset}
+            cx={dim/2} cy={dim/2} r={r} fill="none"
+            stroke={color} strokeWidth={sw} strokeLinecap="round"
+            strokeDasharray={circ} strokeDashoffset={offset}
             style={{
-              transition: "stroke-dashoffset 1.2s cubic-bezier(0.16, 1, 0.3, 1)",
+              transition: "stroke-dashoffset 1.5s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.5s",
+              filter: large ? `drop-shadow(0 0 8px ${glow})` : undefined,
             }}
           />
         </svg>
-
-        {/* Center content */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center rotate-0">
+        {/* Center */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span
-            className="transition-all duration-700"
+            className="mono"
             style={{
+              fontSize: large ? "2.8rem" : "1.5rem",
+              fontWeight: 600,
               color,
-              fontFamily: "var(--font-mono)",
-              fontSize: isLarge ? "3.5rem" : "1.75rem",
-              fontWeight: 500,
-              letterSpacing: "-0.02em",
               lineHeight: 1,
+              letterSpacing: "-0.03em",
+              transition: "color 0.5s",
             }}
           >
             {score}
           </span>
-          {isLarge && (
-            <span
-              className="mt-1 uppercase tracking-[0.2em]"
-              style={{
-                fontFamily: "var(--font-mono)",
-                fontSize: "0.6rem",
-                color: "var(--text-tertiary)",
-              }}
-            >
-              / 100
-            </span>
+          {large && (
+            <>
+              <span className="mono mt-0.5" style={{ fontSize: "0.55rem", color: "var(--text-ghost)", letterSpacing: "0.2em" }}>
+                / 100
+              </span>
+              <span
+                className="mono mt-2 px-2 py-0.5 rounded"
+                style={{
+                  fontSize: "0.6rem",
+                  fontWeight: 600,
+                  letterSpacing: "0.15em",
+                  color,
+                  background: `${color}12`,
+                  border: `1px solid ${color}22`,
+                }}
+              >
+                GRADE {grade}
+              </span>
+            </>
           )}
         </div>
       </div>
-
-      <span
-        className="uppercase tracking-[0.15em]"
-        style={{
-          fontFamily: "var(--font-mono)",
-          fontSize: isLarge ? "0.7rem" : "0.6rem",
-          color: "var(--text-tertiary)",
-        }}
-      >
-        {label}
-      </span>
     </div>
   );
 }

@@ -206,7 +206,7 @@ export function ShareCard({
               <div>
                 <div
                   style={{
-                    fontFamily: "'Instrument Serif', Georgia, serif",
+                    fontFamily: "'Playfair Display', Georgia, serif",
                     fontSize: 32,
                     color: "#e8eaed",
                     lineHeight: 1,
@@ -216,7 +216,7 @@ export function ShareCard({
                 </div>
                 <div
                   style={{
-                    fontFamily: "'DM Mono', monospace",
+                    fontFamily: "'JetBrains Mono', monospace",
                     fontSize: 9,
                     color: "#2e3338",
                     letterSpacing: "0.15em",
@@ -232,7 +232,7 @@ export function ShareCard({
               <div style={{ textAlign: "right" }}>
                 <div
                   style={{
-                    fontFamily: "'DM Mono', monospace",
+                    fontFamily: "'JetBrains Mono', monospace",
                     fontSize: 64,
                     fontWeight: 500,
                     color: scoreColor,
@@ -244,7 +244,7 @@ export function ShareCard({
                 </div>
                 <div
                   style={{
-                    fontFamily: "'DM Mono', monospace",
+                    fontFamily: "'JetBrains Mono', monospace",
                     fontSize: 9,
                     color: "#5a6068",
                     letterSpacing: "0.15em",
@@ -283,7 +283,7 @@ export function ShareCard({
               <div>
                 <div
                   style={{
-                    fontFamily: "'Instrument Serif', Georgia, serif",
+                    fontFamily: "'Playfair Display', Georgia, serif",
                     fontSize: 20,
                     color: "#e8eaed",
                   }}
@@ -292,7 +292,7 @@ export function ShareCard({
                 </div>
                 <div
                   style={{
-                    fontFamily: "'DM Mono', monospace",
+                    fontFamily: "'JetBrains Mono', monospace",
                     fontSize: 12,
                     color: "#5a6068",
                   }}
@@ -305,7 +305,7 @@ export function ShareCard({
             {/* Top signals */}
             <div
               style={{
-                fontFamily: "'DM Mono', monospace",
+                fontFamily: "'JetBrains Mono', monospace",
                 fontSize: 9,
                 color: "#2e3338",
                 letterSpacing: "0.12em",
@@ -324,7 +324,7 @@ export function ShareCard({
                   <div key={s.action} style={{ display: "flex", alignItems: "center", gap: 12 }}>
                     <span
                       style={{
-                        fontFamily: "'DM Mono', monospace",
+                        fontFamily: "'JetBrains Mono', monospace",
                         fontSize: 10,
                         color: "#2e3338",
                         width: 16,
@@ -335,7 +335,7 @@ export function ShareCard({
                     </span>
                     <span
                       style={{
-                        fontFamily: "'DM Mono', monospace",
+                        fontFamily: "'JetBrains Mono', monospace",
                         fontSize: 12,
                         color: "#9aa0a8",
                         width: 140,
@@ -363,7 +363,7 @@ export function ShareCard({
                     </div>
                     <span
                       style={{
-                        fontFamily: "'DM Mono', monospace",
+                        fontFamily: "'JetBrains Mono', monospace",
                         fontSize: 11,
                         color: scoreColor,
                         width: 60,
@@ -390,7 +390,7 @@ export function ShareCard({
             >
               <span
                 style={{
-                  fontFamily: "'DM Mono', monospace",
+                  fontFamily: "'JetBrains Mono', monospace",
                   fontSize: 9,
                   color: "#2e3338",
                   letterSpacing: "0.1em",
@@ -400,7 +400,7 @@ export function ShareCard({
               </span>
               <span
                 style={{
-                  fontFamily: "'DM Mono', monospace",
+                  fontFamily: "'JetBrains Mono', monospace",
                   fontSize: 9,
                   color: "#5a6068",
                 }}

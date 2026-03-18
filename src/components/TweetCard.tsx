@@ -2,172 +2,88 @@
 
 import type { TweetAnalysis } from "@/lib/algorithm";
 
-export function TweetCard({
-  analysis,
-  rank,
-}: {
-  analysis: TweetAnalysis;
-  rank: number;
-}) {
+function fmt(n: number) {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
+  return n.toLocaleString();
+}
+
+export function TweetCard({ analysis, rank }: { analysis: TweetAnalysis; rank: number }) {
   const { tweet, signals, normalizedScore } = analysis;
   const m = tweet.public_metrics;
 
-  const color =
-    normalizedScore >= 70
-      ? "var(--positive)"
-      : normalizedScore >= 40
-        ? "var(--accent-amber)"
-        : "var(--negative)";
+  const color = normalizedScore >= 70 ? "var(--green)" : normalizedScore >= 40 ? "var(--amber)" : "var(--red)";
+  const colorHex = normalizedScore >= 70 ? "#34d399" : normalizedScore >= 40 ? "#ffc040" : "#fb4f5e";
 
-  const borderColor =
-    normalizedScore >= 70
-      ? "rgba(0,230,118,0.15)"
-      : normalizedScore >= 40
-        ? "rgba(255,179,0,0.15)"
-        : "rgba(255,61,87,0.15)";
+  const metrics = [
+    { label: "likes", value: m.like_count },
+    { label: "reposts", value: m.retweet_count },
+    { label: "replies", value: m.reply_count },
+    { label: "quotes", value: m.quote_count },
+    { label: "views", value: m.impression_count },
+    { label: "saves", value: m.bookmark_count },
+  ];
 
   return (
-    <div
-      className="relative rounded-lg overflow-hidden transition-all duration-300 hover:translate-y-[-1px]"
-      style={{
-        background: "var(--bg-card)",
-        border: `1px solid ${borderColor}`,
-      }}
-    >
-      {/* Score accent bar */}
-      <div
-        className="absolute top-0 left-0 w-full h-[2px]"
-        style={{
-          background: `linear-gradient(90deg, ${color}, transparent)`,
-        }}
-      />
+    <div className="glass-card rounded-xl overflow-hidden hover-lift group">
+      <div className="flex">
+        {/* Score sidebar */}
+        <div
+          className="w-14 shrink-0 flex flex-col items-center justify-center gap-1 relative"
+          style={{ background: `${colorHex}06`, borderRight: `1px solid ${colorHex}15` }}
+        >
+          {/* Score fill bar from bottom */}
+          <div
+            className="absolute bottom-0 left-0 right-0 transition-all duration-700"
+            style={{ height: `${normalizedScore}%`, background: `${colorHex}08` }}
+          />
+          <span className="mono relative z-10" style={{ fontSize: "1.1rem", fontWeight: 600, color, lineHeight: 1 }}>
+            {normalizedScore}
+          </span>
+          <span className="mono relative z-10" style={{ fontSize: "0.45rem", color: "var(--text-ghost)", letterSpacing: "0.12em" }}>
+            SCORE
+          </span>
+        </div>
 
-      <div className="p-5">
-        {/* Header: rank + scores */}
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex items-center gap-3">
-            <span
-              className="inline-flex items-center justify-center w-7 h-7 rounded"
-              style={{
-                fontFamily: "var(--font-mono)",
-                fontSize: "0.7rem",
-                fontWeight: 500,
-                background: "var(--bg-elevated)",
-                color: "var(--text-tertiary)",
-                border: "1px solid var(--border-dim)",
-              }}
-            >
-              {rank}
-            </span>
-            <div>
+        {/* Content */}
+        <div className="flex-1 p-4 min-w-0">
+          {/* Top row */}
+          <div className="flex items-center justify-between mb-2.5">
+            <div className="flex items-center gap-2">
               <span
-                className="block"
-                style={{
-                  fontFamily: "var(--font-mono)",
-                  fontSize: "0.6rem",
-                  color: "var(--text-ghost)",
-                  letterSpacing: "0.08em",
-                  textTransform: "uppercase",
-                }}
+                className="mono inline-flex items-center justify-center w-5 h-5 rounded text-[0.6rem]"
+                style={{ background: "var(--bg-elevated)", color: "var(--text-ghost)", border: "1px solid var(--border-dim)" }}
               >
-                P(fav)
+                {rank}
               </span>
-              <span
-                style={{
-                  fontFamily: "var(--font-mono)",
-                  fontSize: "0.75rem",
-                  color: "var(--accent-cyan)",
-                }}
-              >
-                {(signals.primaryScore * 100).toFixed(3)}%
+              <span className="mono" style={{ fontSize: "0.6rem", color: "var(--text-ghost)" }}>
+                P(fav) <span style={{ color: "var(--cyan)" }}>{(signals.primaryScore * 100).toFixed(3)}%</span>
               </span>
             </div>
-          </div>
-
-          <div className="text-right">
-            <span
-              className="block text-2xl font-medium"
-              style={{
-                fontFamily: "var(--font-mono)",
-                color,
-                lineHeight: 1,
-              }}
-            >
-              {normalizedScore}
-            </span>
-            <span
-              style={{
-                fontFamily: "var(--font-mono)",
-                fontSize: "0.55rem",
-                color: "var(--text-ghost)",
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-              }}
-            >
-              score
+            <span className="mono" style={{ fontSize: "0.55rem", color: "var(--text-ghost)" }}>
+              {new Date(tweet.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
             </span>
           </div>
-        </div>
 
-        {/* Tweet text */}
-        <p
-          className="mb-4 leading-[1.65]"
-          style={{
-            fontFamily: "var(--font-body)",
-            fontSize: "0.88rem",
-            color: "var(--text-secondary)",
-          }}
-        >
-          {tweet.text}
-        </p>
+          {/* Text */}
+          <p className="serif leading-[1.7] mb-3" style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}>
+            {tweet.text.length > 240 ? tweet.text.slice(0, 240) + "..." : tweet.text}
+          </p>
 
-        {/* Metrics row */}
-        <div
-          className="flex flex-wrap gap-x-5 gap-y-1 pt-3"
-          style={{ borderTop: "1px solid var(--border-dim)" }}
-        >
-          {[
-            { icon: "♥", value: m.like_count, label: "likes" },
-            { icon: "↻", value: m.retweet_count, label: "reposts" },
-            { icon: "↩", value: m.reply_count, label: "replies" },
-            { icon: "❝", value: m.quote_count, label: "quotes" },
-            { icon: "◉", value: m.impression_count, label: "views" },
-            { icon: "⊏", value: m.bookmark_count, label: "saves" },
-          ].map(({ icon, value, label }) => (
-            <span
-              key={label}
-              className="flex items-center gap-1.5"
-              style={{
-                fontFamily: "var(--font-mono)",
-                fontSize: "0.68rem",
-                color: "var(--text-tertiary)",
-              }}
-            >
-              <span style={{ fontSize: "0.75rem", opacity: 0.5 }}>{icon}</span>
-              {value.toLocaleString()}
-            </span>
-          ))}
-        </div>
+          {/* Metrics */}
+          <div className="flex flex-wrap gap-x-4 gap-y-0.5">
+            {metrics.map(({ label, value }) => (
+              <span key={label} className="mono" style={{ fontSize: "0.62rem", color: "var(--text-ghost)" }}>
+                <span style={{ color: value > 0 ? "var(--text-tertiary)" : undefined }}>{fmt(value)}</span>
+                {" "}{label}
+              </span>
+            ))}
+          </div>
 
-        {/* Bottom meta */}
-        <div
-          className="flex justify-between mt-2 pt-2"
-          style={{
-            fontFamily: "var(--font-mono)",
-            fontSize: "0.6rem",
-            color: "var(--text-ghost)",
-          }}
-        >
-          <span>
+          {/* Formula */}
+          <div className="mt-1.5 mono" style={{ fontSize: "0.52rem", color: "var(--text-invisible)" }}>
             Σ(w·P) = {signals.weightedScore.toFixed(4)}
-          </span>
-          <span>
-            {new Date(tweet.created_at).toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-              year: "numeric",
-            })}
-          </span>
+          </div>
         </div>
       </div>
     </div>
