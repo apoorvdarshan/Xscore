@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { ScoreGauge } from "@/components/ScoreGauge";
 import { SignalBar } from "@/components/SignalBar";
 import { TweetCard } from "@/components/TweetCard";
+import { ShareCard } from "@/components/ShareCard";
 import {
   ACTIONS,
   ACTION_LABELS,
@@ -379,6 +380,11 @@ export default function Home() {
                 </span>
               </div>
             </section>
+
+            {/* Share / Download */}
+            <div className="animate-fade-up stagger-2">
+              <ShareCard user={result.user} analysis={result.analysis} />
+            </div>
 
             {/* Tab bar */}
             <nav
