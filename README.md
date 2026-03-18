@@ -12,7 +12,7 @@ That's it. Fetches tweets locally, scores 19 engagement signals, and opens a sha
 
 **Prerequisites:**
 - Node.js 18+
-- Logged into [x.com](https://x.com) in Chrome, Edge, or Brave (uses browser cookies via [@steipete/bird](https://www.npmjs.com/package/@steipete/bird))
+- Logged into [x.com](https://x.com) in Chrome, Edge, or Brave (uses browser cookies via [@steipete/bird](https://www.jsdelivr.com/package/npm/@steipete/bird))
 
 ## How It Works
 
@@ -78,7 +78,7 @@ npm run dev
 
 ## Tech Stack
 
-- **CLI**: Node.js + [@steipete/bird](https://www.npmjs.com/package/@steipete/bird)
+- **CLI**: Node.js + [@steipete/bird](https://www.jsdelivr.com/package/npm/@steipete/bird)
 - **Web**: Next.js, TypeScript, Tailwind CSS v4
 - **Scoring**: Based on [xai-org/x-algorithm](https://github.com/xai-org/x-algorithm)
 
@@ -91,7 +91,7 @@ npm run dev
 
 ## Disclaimer
 
-This is an independent tool not affiliated with X. Uses [@steipete/bird](https://github.com/nicklockwood/bird) for data access and [xai-org/x-algorithm](https://github.com/xai-org/x-algorithm) for scoring logic. Use at your own discretion.
+This is an independent tool not affiliated with X. Uses [@steipete/bird](https://www.jsdelivr.com/package/npm/@steipete/bird) for data access and [xai-org/x-algorithm](https://github.com/xai-org/x-algorithm) for scoring logic. Use at your own discretion.
 
 ## Author
 
