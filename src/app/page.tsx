@@ -263,7 +263,7 @@ export default function Home() {
                 onClick={() => {
                   const topSignal = ACTIONS.filter(a => SIGNAL_POLARITY[a] === "positive")
                     .sort((a, b) => result.analysis.signalAverages[b] - result.analysis.signalAverages[a])[0];
-                  const text = `My @${result.user.username} algorithm score is ${result.analysis.overallScore}/100\n\nTop signal: ${ACTION_LABELS[topSignal]} (${(result.analysis.signalAverages[topSignal] * 100).toFixed(2)}%)\n\nBuilt by @apoorvdarshan\n\nCheck yours: x-score.vercel.app`;
+                  const text = `My @${result.user.username} algorithm score is ${result.analysis.overallScore}/100\n\nTop signal: ${ACTION_LABELS[topSignal]} (${(result.analysis.signalAverages[topSignal] * 100).toFixed(2)}%)\n\nBuilt by @apoorvdarshan\n\nCheck yours: xscores.vercel.app`;
                   window.open(
                     `https://x.com/intent/tweet?text=${encodeURIComponent(text)}`,
                     "_blank"
