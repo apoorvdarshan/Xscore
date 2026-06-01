@@ -9,6 +9,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: "/api/",
       },
     ],
-    sitemap: "https://xscores.vercel.app/sitemap.xml",
+    sitemap: "https://xscores.apoorvdarshan.com/sitemap.xml",
   };
 }

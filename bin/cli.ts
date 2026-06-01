@@ -5,7 +5,7 @@ import { analyzeAccount, ACTIONS, ACTION_LABELS, SIGNAL_POLARITY } from "../src/
 import { encode } from "../src/lib/codec.js";
 import { exec } from "child_process";
 
-const SITE_URL = "https://xscores.vercel.app";
+const SITE_URL = "https://xscores.apoorvdarshan.com";
 
 function printBanner() {
   console.log();
