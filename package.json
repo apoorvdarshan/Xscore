@@ -20,7 +20,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/apoorvdarshan/Xscore.git"
+    "url": "git+https://github.com/aopv/Xscore.git"
   },
   "keywords": [
     "x",
@@ -35,9 +35,9 @@
   "license": "ISC",
   "type": "module",
   "bugs": {
-    "url": "https://github.com/apoorvdarshan/Xscore/issues"
+    "url": "https://github.com/aopv/Xscore/issues"
   },
-  "homepage": "https://github.com/apoorvdarshan/Xscore#readme",
+  "homepage": "https://github.com/aopv/Xscore#readme",
   "dependencies": {
     "@steipete/bird": "^0.8.0",
     "@tailwindcss/postcss": "^4.2.1",
