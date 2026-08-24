@@ -283,7 +283,7 @@ export default function Home() {
                 onClick={() => {
                   const topSignal = ACTIONS.filter(a => SIGNAL_POLARITY[a] === "positive")
                     .sort((a, b) => result.analysis.signalAverages[b] - result.analysis.signalAverages[a])[0];
-                  const text = `My @${result.user.username} algorithm score is ${result.analysis.overallScore}/100\n\nTop signal: ${ACTION_LABELS[topSignal]} (${(result.analysis.signalAverages[topSignal] * 100).toFixed(2)}%)\n\nBuilt by @apoorvdarshan\n\nCheck yours: xscores.aopv.dev`;
+                  const text = `My @${result.user.username} algorithm score is ${result.analysis.overallScore}/100\n\nTop signal: ${ACTION_LABELS[topSignal]} (${(result.analysis.signalAverages[topSignal] * 100).toFixed(2)}%)\n\nBuilt by @apoorvdarshan\n\nCheck yours: xscores.apoorvdarshan.com`;
                   window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(text)}`, "_blank");
                 }}
                 className="mono px-5 py-2.5 rounded-xl cursor-pointer transition-all duration-200 hover:opacity-80"
@@ -462,7 +462,7 @@ export default function Home() {
               { label: "Source", href: "https://github.com/apoorvdarshan/Xscore" },
               { label: "GitHub", href: "https://github.com/apoorvdarshan" },
               { label: "𝕏", href: "https://x.com/apoorvdarshan" },
-              { label: "LinkedIn", href: "https://linkedin.com/in/apoorvdarshan" },
+              { label: "LinkedIn", href: "https://www.linkedin.com/in/apoorvdarshan/" },
               { label: "Email", href: "mailto:ad13dtu@gmail.com" },
             ].map(({ label, href }) => (
               <a key={label} href={href} target={href.startsWith("mailto") ? undefined : "_blank"} rel="noopener noreferrer" className="transition-colors hover:text-[var(--cyan)]" style={{ color: "var(--text-ghost)" }}>

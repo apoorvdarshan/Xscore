@@ -18,7 +18,7 @@ That's it. Fetches tweets locally, scores 19 engagement signals, and opens a sha
 
 1. **Run the CLI** — `npx -y @apoorvdarshan/xscore @username`
 2. **Local scoring** — Fetches last 50 tweets using your browser cookies, scores each against the Phoenix weighted scorer formula
-3. **View results** — Opens [xscores.aopv.dev](https://xscores.aopv.dev) with your results encoded in the URL (shareable)
+3. **View results** — Opens [xscores.apoorvdarshan.com](https://xscores.apoorvdarshan.com) with your results encoded in the URL (shareable)
 
 Your data never touches a server. Everything runs on your machine.
 
