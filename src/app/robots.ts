@@ -9,6 +9,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: "/api/",
       },
     ],
-    sitemap: "https://xscores.apoorvdarshan.com/sitemap.xml",
+    sitemap: "https://xscores.aopv.dev/sitemap.xml",
   };
 }

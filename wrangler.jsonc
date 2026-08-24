@@ -12,7 +12,7 @@
   },
   "routes": [
     {
-      "pattern": "xscores.apoorvdarshan.com",
+      "pattern": "xscores.aopv.dev",
       "custom_domain": true
     }
   ],
